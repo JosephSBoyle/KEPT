@@ -5,6 +5,9 @@ tmptodel/
 script/
 saved_models/
 .vscode/
+*.csv
+*.json
+longformer-original-clinical-prompt2alpha/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

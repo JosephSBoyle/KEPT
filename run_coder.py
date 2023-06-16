@@ -13,16 +13,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-""" Finetuning the library models for sequence classification on GLUE."""
-# You can also adapt this script on your own text classification task. Pointers for this are left as comments.
+
 
 import os
 import torch
-from torch import nn
-from torch.nn.parallel import DistributedDataParallel
-from data_mimic import MimicFullDataset, my_collate_fn, my_collate_fn_led, DataCollatorForMimic, modify_rule
-from tqdm import tqdm
-import json
+from data_mimic import MimicFullDataset, my_collate_fn_led, DataCollatorForMimic
 import sys
 import numpy as np
 from evaluation import all_metrics
@@ -31,35 +26,28 @@ from evaluation import all_metrics
 # from find_threshold import find_threshold_micro
 
 import logging
-import random
 import sys
 from dataclasses import dataclass, field
 from typing import Optional
 
 import numpy as np
-from datasets import load_dataset, load_metric
 
 import transformers
 from transformers import (
     AutoConfig,
-    AutoModelForSequenceClassification,
-    AutoModelForMaskedLM,
     AutoTokenizer,
-    DataCollatorWithPadding,
     EvalPrediction,
     HfArgumentParser,
-    PretrainedConfig,
     Trainer,
     TrainingArguments,
     default_data_collator,
     set_seed,
 )
-from transformers.trainer_utils import get_last_checkpoint, is_main_process
+from transformers.trainer_utils import get_last_checkpoint
 
 from model import LongformerForMaskedLM
 
 torch.autograd.set_detect_anomaly(True)
-import wandb
 logger = logging.getLogger(__name__)
 
 def printresult(metrics):

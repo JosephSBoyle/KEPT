@@ -1,11 +1,4 @@
-import math
-from dataclasses import dataclass
-from typing import Optional, Tuple
-
-import torch
-import torch.utils.checkpoint
-from torch import nn
-from torch.nn import BCEWithLogitsLoss, CrossEntropyLoss, MSELoss
+from torch.nn import CrossEntropyLoss
 
 from transformers.models.longformer.modeling_longformer import LongformerPreTrainedModel, LongformerModel, LongformerLMHead, LongformerMaskedLMOutput
 

@@ -2,8 +2,6 @@ from collections import defaultdict
 import csv
 import json
 import numpy as np
-import os
-import sys
 from sklearn.metrics import roc_curve, auc
 from tqdm import tqdm
 from constant import MIMIC_2_DIR, MIMIC_3_DIR

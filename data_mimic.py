@@ -1,13 +1,11 @@
 
-from typing import Any, Callable, Dict, List, NewType, Optional, Tuple, Union
+from typing import Any, Dict, List, NewType
 from dataclasses import dataclass
 import torch
 import os
 from torch.utils.data import Dataset
 from constant import DATA_DIR, MIMIC_2_DIR, MIMIC_3_DIR, ICD_50_RANK
-import sys
 import re
-import pandas as pd
 import numpy as np
 import csv
 import ujson, json
@@ -101,7 +99,7 @@ def load_code_descriptions(version='mimic3'):
                 code = row[1]
                 desc = row[-1]
                 desc_dict[reformat(code, True)] = desc
-        with open("%s/D_ICD_PROCEDURES.csv" % (DATA_DIR), 'r') as descfile:
+        with open("%s\\D_ICD_PROCEDURES.csv" % (DATA_DIR), 'r') as descfile:
             r = csv.reader(descfile)
             # header
             next(r)
@@ -110,7 +108,7 @@ def load_code_descriptions(version='mimic3'):
                 desc = row[-1]
                 if code not in desc_dict.keys():
                     desc_dict[reformat(code, False)] = desc
-        with open('%s/ICD9_descriptions' % DATA_DIR, 'r') as labelfile:
+        with open('%sICD9_descriptions.txt' % DATA_DIR, 'r') as labelfile:
             for _, row in enumerate(labelfile):
                 row = row.rstrip().split()
                 code = row[0]
