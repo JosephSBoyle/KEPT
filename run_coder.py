@@ -15,42 +15,33 @@
 # limitations under the License.
 
 
-import os
-import torch
-from data_mimic import MimicFullDataset, my_collate_fn_led, DataCollatorForMimic
-import sys
-import numpy as np
-from evaluation import all_metrics
-# from train_parser import generate_parser, print_metrics
-# from train_utils import generate_output_folder_name, generate_model
-# from find_threshold import find_threshold_micro
-
 import logging
+import os
 import sys
 from dataclasses import dataclass, field
 from typing import Optional
 
 import numpy as np
-
+import torch
 import transformers
-from transformers import (
-    AutoConfig,
-    AutoTokenizer,
-    EvalPrediction,
-    HfArgumentParser,
-    Trainer,
-    TrainingArguments,
-    default_data_collator,
-    set_seed,
-)
+from transformers import (AutoConfig, AutoTokenizer, EvalPrediction,
+                          HfArgumentParser, Trainer, TrainingArguments,
+                          default_data_collator, set_seed)
 from transformers.trainer_utils import get_last_checkpoint
 
+# from train_parser import generate_parser, print_metrics
+# from train_utils import generate_output_folder_name, generate_model
+# from find_threshold import find_threshold_micro
+import wandb
+from data_mimic import (DataCollatorForMimic, MimicFullDataset,
+                        my_collate_fn_led)
+from evaluation import all_metrics
 from model import LongformerForMaskedLM
 
 torch.autograd.set_detect_anomaly(True)
 logger = logging.getLogger(__name__)
 
-def printresult(metrics):
+def printresult(metrics: dict):
     print("------")
     sort_orders  = sorted(metrics.items(), key=lambda x: x[0], reverse=True)
     for k,v in sort_orders:
@@ -346,7 +337,6 @@ def main():
         # Loop to handle MNLI double evaluation (matched, mis-matched)
         tasks = ['mimic3']
         eval_datasets = [eval_dataset]
-
         for eval_dataset, task in zip(eval_datasets, tasks):
             p = trainer.predict(dev_dataset, metric_key_prefix="dev")
             preds = p.predictions[0] if isinstance(p.predictions, tuple) else p.predictions
@@ -362,12 +352,21 @@ def main():
 
             metrics = all_metrics(y, preds, k=[5, 8, 15, 50], threshold=threshold)
             printresult(metrics)
-            max_eval_samples = (
-                data_args.max_eval_samples if data_args.max_eval_samples is not None else len(eval_dataset)
-            )
+
+            max_eval_samples = data_args.max_eval_samples if data_args.max_eval_samples is not None else len(eval_dataset)
+
             metrics["eval_samples"] = min(max_eval_samples, len(eval_dataset))
             trainer.log_metrics("eval", metrics)
             trainer.save_metrics("eval", metrics)
+
+            ### Error analysis
+            ŷ = preds>threshold
+            for i in range(len(eval_dataset)):
+                eval_dataset.df[i]["correct"] = bool(np.array_equal(ŷ[i], y[i]))
+            
+            import pandas as pd
+            pd.DataFrame(eval_dataset.df).to_csv("eval_results.csv")
+            ###
 
     if training_args.do_predict:
         logger.info("*** Predict ***")

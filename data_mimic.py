@@ -252,6 +252,9 @@ class MimicFullDataset(Dataset):
         to_sav = []
         countb = 0
         for index in range(self.len):
+            # Create a copy of the discharge text without the prepended code descriptions for later analysis.
+            self.df[index]["RAW_DISCHARGE_TEXT"] = self.df[index]['TEXT']
+
             text = self.df[index]['TEXT']
             text = re.sub(r'\[\*\*[^\]]*\*\*\]', '', text)  # remove any mimic special token like [**2120-2-28**] or [**Hospital1 3278**]
             tmp = self.tokenizer.tokenize(descriptions + proc_text(text))

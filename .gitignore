@@ -8,7 +8,7 @@ saved_models/
 *.csv
 *.json
 longformer-original-clinical-prompt2alpha/
-
+rare50_maxseqlen2048/
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
