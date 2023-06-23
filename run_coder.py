@@ -189,6 +189,11 @@ class ModelArguments:
         metadata={"help": "what terms to train like bitfit (bias)."},
     )
 
+    label_smoothing: float = field(
+        default=0.0,
+        metadata={"help": "Label smoothing CrossEntropyLoss parameter"},
+    )
+
 def main(): 
     parser = HfArgumentParser((ModelArguments, DataTrainingArguments, TrainingArguments))
     if len(sys.argv) == 2 and sys.argv[1].endswith(".json"):
@@ -257,7 +262,7 @@ def main():
     dev_dataset   = MimicFullDataset(data_args.version, "dev", data_args.max_seq_length, tokenizer, 30, 4)
     eval_dataset  = MimicFullDataset(data_args.version, "test", data_args.max_seq_length, tokenizer, 30, 4)
 
-    num_labels = train_dataset.code_count 
+    num_labels = train_dataset.code_count
     # load config, model
     config = AutoConfig.from_pretrained(
         model_args.config_name if model_args.config_name else model_args.model_name_or_path,
@@ -276,6 +281,7 @@ def main():
         cache_dir=model_args.cache_dir,
         revision=model_args.model_revision,
         use_auth_token=True if model_args.use_auth_token else None,
+        label_smoothing=model_args.label_smoothing,
     )
     # model.longformer.encoder.layer = model.longformer.encoder.layer[0:3] 
     if model_args.finetune_terms != 'no':

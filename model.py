@@ -1,12 +1,16 @@
-from torch.nn import CrossEntropyLoss
+import logging
 
-from transformers.models.longformer.modeling_longformer import LongformerPreTrainedModel, LongformerModel, LongformerLMHead, LongformerMaskedLMOutput
+from torch.nn import CrossEntropyLoss
+from transformers.models.longformer.modeling_longformer import (
+    LongformerLMHead, LongformerMaskedLMOutput, LongformerModel,
+    LongformerPreTrainedModel)
+
 
 class LongformerForMaskedLM(LongformerPreTrainedModel):
 
     _keys_to_ignore_on_load_unexpected = [r"pooler"]
 
-    def __init__(self, config):
+    def __init__(self, config, label_smoothing: float):
         super().__init__(config)
 
         self.longformer = LongformerModel(config, add_pooling_layer=False)
@@ -14,6 +18,10 @@ class LongformerForMaskedLM(LongformerPreTrainedModel):
         self.label_yes_id = config.label_yes
         self.label_no_id = config.label_no
         self.mask_token_id = config.mask_token_id
+        
+        self.label_smoothing = label_smoothing
+        if self.label_smoothing > 0:
+            logging.warning("Running with label smoothing %s.", self.label_smoothing)
 
         self.init_weights()
 
@@ -84,7 +92,7 @@ class LongformerForMaskedLM(LongformerPreTrainedModel):
 
         masked_lm_loss = None
         if labels is not None:
-            loss_fct = CrossEntropyLoss()
+            loss_fct = CrossEntropyLoss(label_smoothing=self.label_smoothing)
             masked_lm_loss = loss_fct(prediction_scores.view(-1, self.config.vocab_size), labels.view(-1))
 
         prediction_scores = prediction_scores[:,self.label_yes_id] - prediction_scores[:,self.label_no_id]
